@@ -1,11 +1,11 @@
-import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
-import type { IUseCase } from '#common/types'
-import type { SongModel, SongSuggestionAPIResponseModel } from '#modules/songs/models'
 import { Endpoints } from '#common/constants'
 import { useFetch } from '#common/helpers'
 import { createSongPayload } from '#modules/songs/helpers'
 import { CreateSongStationUseCase } from '#modules/songs/use-cases'
+import { HTTPException } from 'hono/http-exception'
+import type { IUseCase } from '#common/types'
+import type { SongModel, SongSuggestionAPIResponseModel } from '#modules/songs/models'
+import type { z } from 'zod'
 
 export interface GetSongSuggestionsArgs {
   songId: string
@@ -22,24 +22,26 @@ export class GetSongSuggestionsUseCase implements IUseCase<GetSongSuggestionsArg
   async execute({ songId, limit }: GetSongSuggestionsArgs) {
     const stationId = await this.createSongStation.execute(songId)
 
-    const response = await useFetch<z.infer<typeof SongSuggestionAPIResponseModel>>(Endpoints.songs.suggestions, {
-      stationid: stationId,
-      k: limit
+    const { data, ok } = await useFetch<z.infer<typeof SongSuggestionAPIResponseModel>>({
+      endpoint: Endpoints.songs.suggestions,
+      params: {
+        stationid: stationId,
+        k: limit
+      },
+      context: 'android'
     })
 
-    if (!response || response.error) {
+    if (!data || !ok) {
       throw new HTTPException(404, { message: `no suggestions found for the given song` })
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { stationid, ...suggestions } = response // TODO: find a better way to model the response
+    const { stationid, ...suggestions } = data
 
-    const songs =
+    return (
       Object.values(suggestions)
         .map((element) => element && createSongPayload(element.song))
         .filter(Boolean)
         .slice(0, limit) || []
-
-    return songs
+    )
   }
 }

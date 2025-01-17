@@ -1,8 +1,10 @@
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { ArtistService } from '../services'
-import { ArtistAlbumModel, ArtistModel, ArtistSongModel } from '../models'
+import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
+import { ArtistAlbumModel, ArtistModel, ArtistSongModel } from '#modules/artists/models'
+import { ArtistService } from '#modules/artists/services'
+import { z } from 'zod'
+import type { Routes } from '#common/types'
 
-export class ArtistController {
+export class ArtistController implements Routes {
   public controller: OpenAPIHono
   private artistService: ArtistService
 
@@ -19,7 +21,7 @@ export class ArtistController {
         tags: ['Artists'],
         summary: 'Retrieve artists by ID or link',
         description: `Retrieve artists by ID or by a direct artist link.`,
-        operationId: 'getArtist',
+        operationId: 'getArtistByIdOrLink',
         request: {
           query: z.object({
             id: z.string().optional().openapi({
@@ -43,19 +45,19 @@ export class ArtistController {
               title: 'Page number',
               description: 'page number',
               type: 'number',
-              example: 1
+              example: '1'
             }),
             songCount: z.string().pipe(z.coerce.number()).optional().openapi({
               title: 'Song count',
               description: 'Number of songs to fetch',
               type: 'number',
-              example: 10
+              example: '10'
             }),
             albumCount: z.string().pipe(z.coerce.number()).optional().openapi({
               title: 'Album count',
               description: 'Number of albums to fetch',
               type: 'number',
-              example: 10
+              example: '10'
             }),
             sortBy: z.enum(['popularity', 'latest', 'alphabetical']).optional().openapi({
               title: 'Sort by',
@@ -133,19 +135,19 @@ export class ArtistController {
               title: 'Page number',
               description: 'The page number of the results to retrieve',
               type: 'integer',
-              example: 0
+              example: '0'
             }),
             songCount: z.string().pipe(z.coerce.number()).optional().openapi({
               title: 'Song count',
               description: 'The number of songs to retrieve for the artist',
               type: 'integer',
-              example: 10
+              example: '10'
             }),
             albumCount: z.string().pipe(z.coerce.number()).optional().openapi({
               title: 'Album count',
               description: 'The number of albums to retrieve for the artist',
               type: 'integer',
-              example: 10
+              example: '10'
             }),
             sortBy: z
               .enum(['popularity', 'latest', 'alphabetical'])
@@ -228,8 +230,8 @@ export class ArtistController {
             page: z.string().pipe(z.coerce.number()).optional().openapi({
               description: 'The page number of the results to retrieve',
               type: 'number',
-              example: 0,
-              default: 0
+              example: '0',
+              default: '0'
             }),
             sortBy: z
               .enum(['popularity', 'latest', 'alphabetical'])
@@ -312,8 +314,8 @@ export class ArtistController {
             page: z.string().pipe(z.coerce.number()).optional().openapi({
               description: 'The page number of the results to retrieve',
               type: 'number',
-              example: 0,
-              default: 0
+              example: '0',
+              default: '0'
             }),
             sortBy: z
               .enum(['popularity', 'latest', 'alphabetical'])

@@ -1,10 +1,10 @@
-import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
-import type { IUseCase } from '#common/types'
-import type { ArtistAPIResponseModel, ArtistModel } from '#modules/artists/models'
-import { createArtistPayload } from '#modules/artists/helpers'
 import { Endpoints } from '#common/constants'
 import { useFetch } from '#common/helpers'
+import { createArtistPayload } from '#modules/artists/helpers'
+import { HTTPException } from 'hono/http-exception'
+import type { IUseCase } from '#common/types'
+import type { ArtistAPIResponseModel, ArtistModel } from '#modules/artists/models'
+import type { z } from 'zod'
 
 export interface GetArtistByIdArgs {
   artistId: string
@@ -19,17 +19,20 @@ export class GetArtistByIdUseCase implements IUseCase<GetArtistByIdArgs, z.infer
   constructor() {}
 
   async execute({ artistId, page, songCount, albumCount, sortBy, sortOrder }: GetArtistByIdArgs) {
-    const response = await useFetch<z.infer<typeof ArtistAPIResponseModel>>(Endpoints.artists.id, {
-      artistId,
-      n_song: songCount,
-      n_album: albumCount,
-      page,
-      sort_order: sortOrder,
-      category: sortBy
+    const { data } = await useFetch<z.infer<typeof ArtistAPIResponseModel>>({
+      endpoint: Endpoints.artists.id,
+      params: {
+        artistId,
+        n_song: songCount,
+        n_album: albumCount,
+        page,
+        sort_order: sortOrder,
+        category: sortBy
+      }
     })
 
-    if (!response) throw new HTTPException(404, { message: 'artist not found' })
+    if (!data) throw new HTTPException(404, { message: 'artist not found' })
 
-    return createArtistPayload(response)
+    return createArtistPayload(data)
   }
 }

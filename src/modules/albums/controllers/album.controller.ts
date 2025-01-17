@@ -1,8 +1,9 @@
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi'
-import { AlbumService } from '#modules/albums/services'
+import { createRoute, OpenAPIHono, z } from '@hono/zod-openapi'
 import { AlbumModel } from '#modules/albums/models'
+import { AlbumService } from '#modules/albums/services'
+import type { Routes } from '#common/types'
 
-export class AlbumController {
+export class AlbumController implements Routes {
   public controller: OpenAPIHono
   private albumService: AlbumService
 
@@ -19,15 +20,15 @@ export class AlbumController {
         tags: ['Album'],
         summary: 'Retrieve an album by ID or link',
         description: 'Retrieve an album by providing either an ID or a direct link to the album on JioSaavn.',
-        operationId: 'getAlbum',
+        operationId: 'getAlbumByIdOrLink',
         request: {
           query: z.object({
             id: z.string().optional().openapi({
               title: 'Album ID',
               description: 'The unique ID of the album',
               type: 'string',
-              example: 'Hq1sr6xu',
-              default: 'Hq1sr6xu'
+              example: '23241654',
+              default: '23241654'
             }),
             link: z
               .string()
@@ -38,8 +39,8 @@ export class AlbumController {
                 title: 'Album Link',
                 description: 'A direct link to the album on JioSaavn',
                 type: 'string',
-                example: 'https://www.jiosaavn.com/album/houdini/OgwhbhtDRwM',
-                default: 'https://www.jiosaavn.com/album/houdini/OgwhbhtDRwM'
+                example: 'https://www.jiosaavn.com/album/future-nostalgia/ITIyo-GDr7A_',
+                default: 'https://www.jiosaavn.com/album/future-nostalgia/ITIyo-GDr7A_'
               })
           })
         },

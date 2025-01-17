@@ -1,10 +1,10 @@
+import { Endpoints } from '#common/constants'
+import { useFetch } from '#common/helpers'
+import { createAlbumPayload } from '#modules/albums/helpers'
 import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
 import type { IUseCase } from '#common/types'
 import type { ArtistAlbumAPIResponseModel, ArtistAlbumModel } from '#modules/artists/models'
-import { createAlbumPayload } from '#modules/albums/helpers'
-import { useFetch } from '#common/helpers'
-import { Endpoints } from '#common/constants'
+import type { z } from 'zod'
 
 export interface GetArtistAlbumsArgs {
   artistId: string
@@ -17,18 +17,21 @@ export class GetArtistAlbumsUseCase implements IUseCase<GetArtistAlbumsArgs, z.i
   constructor() {}
 
   async execute({ artistId, page, sortOrder, sortBy }: GetArtistAlbumsArgs) {
-    const response = await useFetch<z.infer<typeof ArtistAlbumAPIResponseModel>>(Endpoints.artists.albums, {
-      artistId,
-      page,
-      sort_order: sortOrder,
-      category: sortBy
+    const { data } = await useFetch<z.infer<typeof ArtistAlbumAPIResponseModel>>({
+      endpoint: Endpoints.artists.albums,
+      params: {
+        artistId,
+        page,
+        sort_order: sortOrder,
+        category: sortBy
+      }
     })
 
-    if (!response) throw new HTTPException(404, { message: 'artist albums not found' })
+    if (!data) throw new HTTPException(404, { message: 'artist albums not found' })
 
     return {
-      total: response.topAlbums.total,
-      albums: response.topAlbums.albums.map((album) => createAlbumPayload(album))
+      total: data.topAlbums.total,
+      albums: data.topAlbums.albums.map((album) => createAlbumPayload(album))
     }
   }
 }

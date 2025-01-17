@@ -1,10 +1,10 @@
-import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
-import type { IUseCase } from '#common/types'
-import type { SearchArtistAPIResponseModel, SearchArtistModel } from '#modules/search/models'
 import { Endpoints } from '#common/constants'
 import { useFetch } from '#common/helpers'
-import { createArtistPayload } from '#modules/artists/helpers'
+import { createArtistMapPayload } from '#modules/artists/helpers'
+import { HTTPException } from 'hono/http-exception'
+import type { IUseCase } from '#common/types'
+import type { SearchArtistAPIResponseModel, SearchArtistModel } from '#modules/search/models'
+import type { z } from 'zod'
 
 export interface SearchArtistsArgs {
   query: string
@@ -16,18 +16,21 @@ export class SearchArtistsUseCase implements IUseCase<SearchArtistsArgs, z.infer
   constructor() {}
 
   async execute({ query, limit, page }: SearchArtistsArgs): Promise<z.infer<typeof SearchArtistModel>> {
-    const response = await useFetch<z.infer<typeof SearchArtistAPIResponseModel>>(Endpoints.search.artists, {
-      q: query,
-      p: page,
-      n: limit
+    const { data } = await useFetch<z.infer<typeof SearchArtistAPIResponseModel>>({
+      endpoint: Endpoints.search.artists,
+      params: {
+        q: query,
+        p: page,
+        n: limit
+      }
     })
 
-    if (!response) throw new HTTPException(404, { message: 'artist not found' })
+    if (!data) throw new HTTPException(404, { message: 'artist not found' })
 
     return {
-      total: response.total,
-      start: response.start,
-      results: response.results?.map(createArtistPayload).slice(0, limit) || []
+      total: data.total,
+      start: data.start,
+      results: data.results?.map(createArtistMapPayload).slice(0, limit) || []
     }
   }
 }

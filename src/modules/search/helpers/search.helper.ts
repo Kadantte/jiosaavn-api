@@ -1,6 +1,14 @@
-import type { z } from 'zod'
-import type { SearchAPIResponseModel, SearchModel } from '#modules/search/models'
 import { createImageLinks } from '#common/helpers'
+import { createArtistMapPayload } from '#modules/artists/helpers'
+import type {
+  SearchAlbumAPIResponseModel,
+  SearchAlbumModel,
+  SearchAPIResponseModel,
+  SearchModel,
+  SearchPlaylistAPIResponseModel,
+  SearchPlaylistModel
+} from '#modules/search/models'
+import type { z } from 'zod'
 
 export const createSearchPayload = (search: z.infer<typeof SearchAPIResponseModel>): z.infer<typeof SearchModel> => ({
   topQuery: {
@@ -9,12 +17,11 @@ export const createSearchPayload = (search: z.infer<typeof SearchAPIResponseMode
         id: item?.id,
         title: item?.title,
         image: createImageLinks(item?.image),
-        album: item?.album,
-        url: item?.url,
+        album: item?.more_info?.album,
+        url: item?.perma_url,
         type: item?.type,
         language: item?.more_info?.language,
         description: item?.description,
-        position: item?.position,
         primaryArtists: item?.more_info?.primary_artists,
         singers: item?.more_info?.singers
       }
@@ -28,11 +35,10 @@ export const createSearchPayload = (search: z.infer<typeof SearchAPIResponseMode
         id: song?.id,
         title: song?.title,
         image: createImageLinks(song?.image),
-        album: song?.album,
-        url: song?.url,
+        album: song?.more_info.album,
+        url: song?.perma_url,
         type: song?.type,
         description: song?.description,
-        position: song?.position,
         primaryArtists: song?.more_info?.primary_artists,
         singers: song?.more_info?.singers,
         language: song?.more_info?.language
@@ -47,11 +53,10 @@ export const createSearchPayload = (search: z.infer<typeof SearchAPIResponseMode
         id: album?.id,
         title: album?.title,
         image: createImageLinks(album.image),
-        artist: album?.music,
-        url: album?.url,
+        artist: album?.more_info.music,
+        url: album?.perma_url,
         type: album?.type,
         description: album?.description,
-        position: album?.position,
         year: album?.more_info?.year,
         songIds: album?.more_info?.song_pids,
         language: album?.more_info?.language
@@ -66,7 +71,6 @@ export const createSearchPayload = (search: z.infer<typeof SearchAPIResponseMode
         id: artist?.id,
         title: artist?.title,
         image: createImageLinks(artist?.image),
-        url: artist?.url,
         type: artist?.type,
         description: artist?.description,
         position: artist?.position
@@ -81,13 +85,53 @@ export const createSearchPayload = (search: z.infer<typeof SearchAPIResponseMode
         id: playlist?.id,
         title: playlist?.title,
         image: createImageLinks(playlist.image),
-        url: playlist?.url,
+        url: playlist?.perma_url,
         type: playlist?.type,
-        language: playlist?.language,
-        description: playlist?.description,
-        position: playlist?.position
+        language: playlist?.more_info?.language,
+        description: playlist?.description
       }
     }),
     position: search?.playlists?.position
   }
+})
+
+export const createSearchPlaylistPayload = (
+  playlist: z.infer<typeof SearchPlaylistAPIResponseModel>
+): z.infer<typeof SearchPlaylistModel> => ({
+  total: Number(playlist.total),
+  start: Number(playlist.start),
+  results: playlist.results.map((item) => ({
+    id: item.id,
+    name: item.title,
+    type: item.type,
+    image: createImageLinks(item.image),
+    url: item.perma_url,
+    songCount: item.more_info.song_count ? Number(item.more_info.song_count) : null,
+    language: item.more_info.language,
+    explicitContent: item.explicit_content === '1'
+  }))
+})
+
+export const createSearchAlbumPayload = (
+  album: z.infer<typeof SearchAlbumAPIResponseModel>
+): z.infer<typeof SearchAlbumModel> => ({
+  total: Number(album.total),
+  start: Number(album.start),
+  results: album.results.map((item) => ({
+    id: item.id,
+    name: item.title,
+    description: item.header_desc,
+    url: item.perma_url,
+    year: item.year ? Number(item.year) : null,
+    type: item.type,
+    playCount: item.play_count ? Number(item.play_count) : null,
+    language: item.language,
+    explicitContent: item.explicit_content === '1',
+    artists: {
+      primary: item.more_info?.artistMap?.primary_artists?.map(createArtistMapPayload),
+      featured: item.more_info?.artistMap?.featured_artists?.map(createArtistMapPayload),
+      all: item.more_info?.artistMap?.artists?.map(createArtistMapPayload)
+    },
+    image: createImageLinks(item.image)
+  }))
 })

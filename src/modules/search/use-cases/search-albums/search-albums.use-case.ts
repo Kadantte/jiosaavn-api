@@ -1,10 +1,9 @@
-import { HTTPException } from 'hono/http-exception'
-import { Endpoints } from '../../../../common/constants'
-import { useFetch } from '../../../../common/helpers'
+import { Endpoints } from '#common/constants'
+import { useFetch } from '#common/helpers'
+import { createSearchAlbumPayload } from '#modules/search/helpers'
 import type { IUseCase } from '#common/types'
-import type { z } from 'zod'
 import type { SearchAlbumAPIResponseModel, SearchAlbumModel } from '#modules/search/models'
-import { createAlbumPayload } from '#modules/albums/helpers'
+import type { z } from 'zod'
 
 export interface SearchAlbumsArgs {
   query: string
@@ -16,18 +15,15 @@ export class SearchAlbumsUseCase implements IUseCase<SearchAlbumsArgs, z.infer<t
   constructor() {}
 
   async execute({ query, limit, page }: SearchAlbumsArgs): Promise<z.infer<typeof SearchAlbumModel>> {
-    const response = await useFetch<z.infer<typeof SearchAlbumAPIResponseModel>>(Endpoints.search.albums, {
-      q: query,
-      p: page,
-      n: limit
+    const { data } = await useFetch<z.infer<typeof SearchAlbumAPIResponseModel>>({
+      endpoint: Endpoints.search.albums,
+      params: {
+        q: query,
+        p: page,
+        n: limit
+      }
     })
 
-    if (!response) throw new HTTPException(404, { message: 'album not found' })
-
-    return {
-      total: response.total,
-      start: response.start,
-      results: response.results?.map(createAlbumPayload).slice(0, limit) || []
-    }
+    return createSearchAlbumPayload(data)
   }
 }

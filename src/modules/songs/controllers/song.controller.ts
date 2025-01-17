@@ -1,9 +1,9 @@
-import { OpenAPIHono, createRoute } from '@hono/zod-openapi'
-import { z } from 'zod'
-import type { hc } from 'hono/client'
-import type { Routes } from '#common/types'
+import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
 import { LyricsModel, SongModel } from '#modules/songs/models'
 import { SongService } from '#modules/songs/services'
+import { z } from 'zod'
+import type { Routes } from '#common/types'
+import type { hc } from 'hono/client'
 
 export class SongController implements Routes {
   public controller: OpenAPIHono
@@ -23,7 +23,7 @@ export class SongController implements Routes {
         tags: ['Songs'],
         summary: 'Retrieve songs by ID or link',
         description: 'Retrieve songs by a comma-separated list of IDs or by a direct link to the song on JioSaavn.',
-        operationId: 'getSong',
+        operationId: 'getSongByIdsOrLink',
         request: {
           query: z.object({
             ids: z.string().optional().openapi({
@@ -155,7 +155,7 @@ export class SongController implements Routes {
             id: z.string().openapi({
               description: 'ID of the song to retrieve the lyrics for',
               type: 'string',
-              example: '1212121'
+              example: '3IoDK8qI'
             })
           })
         },
@@ -211,8 +211,8 @@ export class SongController implements Routes {
               description: 'Limit the number of suggestions to retrieve',
               type: 'number',
               title: 'Limit',
-              example: 10,
-              default: 10
+              example: '10',
+              default: '10'
             })
           })
         },

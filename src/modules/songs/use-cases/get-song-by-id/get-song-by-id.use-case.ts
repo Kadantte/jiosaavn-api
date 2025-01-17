@@ -1,11 +1,11 @@
-import { HTTPException } from 'hono/http-exception'
-import type { z } from 'zod'
-import type { IUseCase } from '#common/types'
-import type { SongAPIResponseModel, SongModel } from '#modules/songs/models'
 import { Endpoints } from '#common/constants'
 import { useFetch } from '#common/helpers'
 import { createSongPayload } from '#modules/songs/helpers'
 import { GetSongLyricsUseCase } from '#modules/songs/use-cases'
+import { HTTPException } from 'hono/http-exception'
+import type { IUseCase } from '#common/types'
+import type { SongAPIResponseModel, SongModel } from '#modules/songs/models'
+import type { z } from 'zod'
 
 export interface GetSongByIdArgs {
   songIds: string
@@ -20,13 +20,16 @@ export class GetSongByIdUseCase implements IUseCase<GetSongByIdArgs, z.infer<typ
   }
 
   async execute({ songIds, includeLyrics }: GetSongByIdArgs) {
-    const response = await useFetch<{ songs: z.infer<typeof SongAPIResponseModel>[] }>(Endpoints.songs.id, {
-      pids: songIds
+    const { data } = await useFetch<{ songs: z.infer<typeof SongAPIResponseModel>[] }>({
+      endpoint: Endpoints.songs.id,
+      params: {
+        pids: songIds
+      }
     })
 
-    if (!response.songs?.length) throw new HTTPException(404, { message: 'song not found' })
+    if (!data.songs?.length) throw new HTTPException(404, { message: 'song not found' })
 
-    const songs = response.songs.map((element) => createSongPayload(element))
+    const songs = data.songs.map((song) => createSongPayload(song))
 
     if (includeLyrics) {
       await Promise.all(

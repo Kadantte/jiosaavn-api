@@ -1,35 +1,7 @@
-import { z } from 'zod'
 import { DownloadLinkModel } from '#common/models'
-
-export const LyricsModel = z.object({
-  lyrics: z.string(),
-  copyright: z.string(),
-  snippet: z.string()
-})
-
-export const LyricsAPIResponseModel = z.object({
-  lyrics: z.string(),
-  lyrics_copyright: z.string(),
-  snippet: z.string()
-})
-
-export const SongArtistMapModel = z.object({
-  id: z.string(),
-  name: z.string(),
-  role: z.string(),
-  type: z.string(),
-  image: z.string(),
-  perma_url: z.string()
-})
-
-export const ArtistMapModel = z.object({
-  id: z.string(),
-  name: z.string(),
-  role: z.string(),
-  type: z.string(),
-  image: z.array(DownloadLinkModel),
-  url: z.string()
-})
+import { ArtistMapAPIResponseModel, ArtistMapModel } from '#modules/artists/models/artist-map.model'
+import { z } from 'zod'
+import { LyricsModel } from './song-lyrics.model' // import from absolute path to avoid circular dependency
 
 export const SongAPIResponseModel = z.object({
   id: z.string(),
@@ -70,9 +42,9 @@ export const SongAPIResponseModel = z.object({
     starred: z.string(),
     copyright_text: z.string(),
     artistMap: z.object({
-      primary_artists: z.array(SongArtistMapModel),
-      featured_artists: z.array(SongArtistMapModel),
-      artists: z.array(SongArtistMapModel)
+      primary_artists: z.array(ArtistMapAPIResponseModel),
+      featured_artists: z.array(ArtistMapAPIResponseModel),
+      artists: z.array(ArtistMapAPIResponseModel)
     }),
     release_date: z.string(),
     label_url: z.string(),
@@ -89,22 +61,22 @@ export const SongModel = z.object({
   id: z.string(),
   name: z.string(),
   type: z.string(),
-  year: z.number(),
-  releaseDate: z.string(),
-  duration: z.number(),
-  label: z.string(),
+  year: z.string().nullable(),
+  releaseDate: z.string().nullable(),
+  duration: z.number().nullable(),
+  label: z.string().nullable(),
   explicitContent: z.boolean(),
-  playCount: z.number(),
+  playCount: z.number().nullable(),
   language: z.string(),
   hasLyrics: z.boolean(),
-  lyricsId: z.string(),
+  lyricsId: z.string().nullable(),
   lyrics: LyricsModel.optional(),
   url: z.string(),
-  copyright: z.string(),
+  copyright: z.string().nullable(),
   album: z.object({
-    id: z.string(),
-    name: z.string(),
-    url: z.string()
+    id: z.string().nullable(),
+    name: z.string().nullable(),
+    url: z.string().nullable()
   }),
   artists: z.object({
     primary: z.array(ArtistMapModel),
